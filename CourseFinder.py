@@ -1,31 +1,47 @@
 import requests
+import datetime
 from bs4 import BeautifulSoup
 
 def setup():
-    year = input("Enter year(2018, 2019, ...)or q to quit: ")
-    code = input("Enter 3 or 4 letter subject code or q to quit: ")
-    season = input("Spring(S) or Fall(F) or q to quit: ")
-    course = input("Enter course number or q to quit: ")
-
-    code = code.upper()
+	#Deal with season
+    season = input("Spring(Sp), Summer(Su), or Fall(Fa): ")
     season = season.upper()
+	
+    if (season == 'SP'):
+        season = str(10)
+    elif (season == 'SU'):
+	    season = str(20)
+    elif (season == 'FA'):
+	    season = str(30)
+    else:
+        print('Invalid season. Exiting.')
+        exit()
+		
+	#Deal with year
+    year = input("Enter a valid year(2018, 2019, ...): ")
+    now = datetime.datetime.now()
+	
+    if (int(year) < now.year or (season == 'SU' and int(year) < now.year) or (season == 'SU' and int(year) >= now.year)):
+	    print('Invalid year. Exiting.')
+	    exit()
+	
+	#Deal with course code
+    code = input("Enter 3 or 4 letter subject code: ")
+    code = code.upper()
+	
+	#Deal with course number
+    course = input("Enter course number or q to quit: ")
+    if (course == 'Q' or course == 'q'):
+        exit()
+	
+    if (len(course) == 1):
+        course = '00' + course
 
     if (len(course) == 2):
         course = '0' + course
-        print(course)
-
-    if (season == 'S'):
-        season = str(10)
-    else:
-        season = str(30)
-
+		
+	#Put it all together
     term = year + season
-    print(term)
-    print(type(term))
-
-    if (year == 'Q' or code == 'Q' or season == 'Q' or course == 'Q'):
-        exit()
-
     check(code, term, course)
 
 def check(code, term, course):
@@ -40,13 +56,15 @@ def check(code, term, course):
     link2 = parsed
 
     for link in parsed.find_all('tr'):	
-        if (link.find('a', href=True, text='15001') != None):
+        if (link.find('small', text=code + '-' + course + '-01') != None):
             link2 = link
 	
-    for course in link2.find_all('small')[12]:
-        if (course == 'Closed'):
-            print(course)
+    for tempCourse in link2.find_all('small')[12]:
+        if (tempCourse == 'Closed'):
+            print(code + '-' + course + '-01')
+            print(tempCourse)
         else:
-            print(course, " seats available")
+            print(code + '-' + course + '-01')
+            print(tempCourse, "seats available")
 
 setup()
